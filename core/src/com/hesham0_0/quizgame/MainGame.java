@@ -6,7 +6,6 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -27,8 +26,10 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 	float aspectRation = 1;
 	private SpriteBatch batch;
 	private GameScreen gameScreen = GameScreen.START_SCREEN;
-	private final List<Button> questionButtons = new ArrayList<>();
 	private final List<Button> startButtons = new ArrayList<>();
+
+	private final List<Button> vialsButtons = new ArrayList<>();
+	private final List<Button> questionButtons = new ArrayList<>();
 	private final List<Button> gameOverButtons = new ArrayList<>();
 	private QuestionBody questionBody;
 	private Texture background;
@@ -52,7 +53,7 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 		viewport.apply();
 		batch.setProjectionMatrix(camera.combined);
 		batch = new SpriteBatch();
-		background= new Texture("background.jpg");
+		background= new Texture("background.png");
 		initToStartScreen();
 
 	}
@@ -61,10 +62,10 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 		questionBody = new QuestionBody(
 				virtualWidth / 2,
 				virtualHeight * 3 / 4,
-				virtualWidth - 100,
+				virtualWidth * 11 / 12,
 				virtualHeight  / 3,
 				question.getQuestion());
-		float buttonWidth = virtualWidth * 4 / 5;
+		float buttonWidth = virtualWidth * 11 / 12;
 		questionButtons.clear();
 
 		for (int i = 0; i < Utils.positionsPortrait.length; i++) {
@@ -96,6 +97,9 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 			case START_SCREEN:
 				renderStartScreen();
 				break;
+			case VIALS_SCREEN:
+				renderVialsScreen();
+				break;
 			case PLAYING_SCREEN:
 				renderPlayingScreen();
 				break;
@@ -112,6 +116,30 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 						virtualWidth,
 						"Start")
 		);
+	}
+
+	public void initToVialsScreen() {
+		for (int i = 0; i < Utils.vialsDrawable.size(); i++) {
+			if (Gdx.graphics.getWidth() < Gdx.graphics.getHeight()) {
+				vialsButtons.add(
+						new Button(
+								Utils.positionsPortrait[i].x,
+								Utils.positionsPortrait[i].y,
+								virtualWidth,
+								Utils.vialsDrawable.get(i)
+						)
+				);
+			} else {
+				vialsButtons.add(
+						new Button(
+								Utils.positionsLandscape[i].x,
+								Utils.positionsLandscape[i].y,
+								virtualWidth,
+								Utils.vialsDrawable.get(i)
+						)
+				);
+			}
+		}
 	}
 
 	public void initToPlayingScreen() {
@@ -131,6 +159,14 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 	public void renderStartScreen(){
 		batch.begin();
 		for (Button button : startButtons) {
+			button.draw(batch, 1);
+		}
+		batch.end();
+	}
+
+	public void renderVialsScreen(){
+		batch.begin();
+		for (Button button : vialsButtons) {
 			button.draw(batch, 1);
 		}
 		batch.end();
@@ -202,6 +238,9 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 			case START_SCREEN:
 				onClickStartScreen(worldX,worldY);
 				break;
+			case VIALS_SCREEN:
+				onClickVialsScreen(worldX,worldY);
+				break;
 			case PLAYING_SCREEN:
 				onClickPlayingScreen(worldX,worldY);
 				break;
@@ -213,6 +252,14 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 	}
 	public void onClickStartScreen(float worldX, float worldY){
 		for (Button btn : startButtons) {
+			if (btn.isClicked(worldX,worldY)){
+				initToVialsScreen();
+				gameScreen = GameScreen.VIALS_SCREEN;
+			}
+		}
+	}
+	public void onClickVialsScreen(float worldX, float worldY){
+		for (Button btn : vialsButtons) {
 			if (btn.isClicked(worldX,worldY)){
 				initToPlayingScreen();
 				gameScreen = GameScreen.PLAYING_SCREEN;

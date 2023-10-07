@@ -20,17 +20,27 @@ public class Button extends Actor {
 
     public Button(float x, float y, float virtualWidth, String labelText) {
         this.buttonDrawable = new Texture("button.png");
-        this.virtualWidth=virtualWidth;
+        this.virtualWidth = virtualWidth;
         this.width = virtualWidth * 4 / 5;
         this.height = width * buttonDrawable.getHeight() / buttonDrawable.getWidth();
         this.setBounds(x - (this.width / 1.45f), y - (this.height / 2f), this.width, this.height);
         setLabel(labelText);
     }
 
+    public Button(float x, float y, float virtualWidth, Texture texture) {
+        this.buttonDrawable = texture;
+        this.virtualWidth = virtualWidth;
+        this.width = virtualWidth * 1 / 5;
+        this.height = width * buttonDrawable.getHeight() / buttonDrawable.getWidth();
+        this.setBounds(x - (this.width / 1.45f), y - (this.height / 2f), this.width, this.height);
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         batch.draw(buttonDrawable, getX(), getY(), getWidth(), getHeight());
-        label.draw(batch, parentAlpha);
+        if (label != null) {
+            label.draw(batch, parentAlpha);
+        }
     }
 
     public boolean isClicked(float x, float y) {

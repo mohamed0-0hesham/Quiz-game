@@ -1,5 +1,6 @@
 package com.hesham0_0.quizgame;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.hesham0_0.quizgame.models.Question;
 
@@ -10,6 +11,11 @@ import java.util.List;
 public class Utils {
     public final static float VIRTUAL_WIDTH = 1280;
     public final static float VIRTUAL_HEIGHT = 1280;
+    public final static Texture buttonDrawable = new Texture("button.png");
+    public final static List<Texture> vialsDrawable = Arrays.asList(
+            new Texture("vials/Balance.png"),
+            new Texture("vials/intima.png")
+    );
     public static List<Question> questions = Arrays.asList(
             new Question(
                     "What programming language is known for its simplicity and readability?",
@@ -69,15 +75,15 @@ public class Utils {
     );
 
     public static Vector2[] positionsPortrait = new Vector2[]{
-            new Vector2(VIRTUAL_WIDTH / 2, 600),
-            new Vector2(VIRTUAL_WIDTH / 2, 450),
-            new Vector2(VIRTUAL_WIDTH / 2, 300),
-            new Vector2(VIRTUAL_WIDTH / 2, 150)
+            new Vector2(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT * 9 / 12),
+            new Vector2(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT * 7 / 12),
+            new Vector2(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT * 5 / 12),
+            new Vector2(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT * 3/ 12)
     };
     public static Vector2[] positionsLandscape = new Vector2[]{
-            new Vector2(VIRTUAL_WIDTH / 4, 300),
-            new Vector2(VIRTUAL_WIDTH / 4, 150),
-            new Vector2(VIRTUAL_WIDTH * 3 / 4, 300),
-            new Vector2(VIRTUAL_WIDTH * 3 / 4, 150)
+            new Vector2(VIRTUAL_WIDTH / 4, VIRTUAL_HEIGHT * 2.5f / 12),
+            new Vector2(VIRTUAL_WIDTH * 3 / 4, VIRTUAL_HEIGHT * 2.5f / 12),
+            new Vector2(VIRTUAL_WIDTH / 4, VIRTUAL_HEIGHT / 12),
+            new Vector2(VIRTUAL_WIDTH * 3 / 4, VIRTUAL_HEIGHT  / 12)
     };
 }
