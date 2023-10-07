@@ -10,6 +10,11 @@ public class DesktopLauncher {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(60);
 		config.setTitle("Quiz Game");
+		int screenWidth = Lwjgl3ApplicationConfiguration.getDisplayMode().width;
+		int screenHeight = Lwjgl3ApplicationConfiguration.getDisplayMode().height;
+		config.setWindowedMode(screenWidth, screenHeight);
+		config.setResizable(true);
+		config.setMaximized(true);
 		new Lwjgl3Application(new MainGame(), config);
 	}
 }

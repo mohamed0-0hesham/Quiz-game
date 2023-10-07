@@ -6,63 +6,157 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Box2D;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.hesham0_0.quizgame.models.Button;
+import com.hesham0_0.quizgame.models.Question;
+import com.hesham0_0.quizgame.models.QuestionBody;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MainGame extends ApplicationAdapter implements InputProcessor {
 	private OrthographicCamera camera;
-	private final float virtualWidth = 720;
-	private float virtualHeight = 1280;
-	float aspectRation=1;
+	private final float virtualWidth = Utils.VIRTUAL_WIDTH;
+	private float virtualHeight = Utils.VIRTUAL_HEIGHT;
+	float aspectRation = 1;
 	private SpriteBatch batch;
-	private World world;
-	private Box2DDebugRenderer debugRenderer;
-	GameScreen gameScreen = GameScreen.START_SCREEN;
-	Texture img;
-	private final List<Button> buttons = new ArrayList<>();
+	private GameScreen gameScreen = GameScreen.START_SCREEN;
+	private final List<Button> questionButtons = new ArrayList<>();
+	private final List<Button> startButtons = new ArrayList<>();
+	private final List<Button> gameOverButtons = new ArrayList<>();
+	private QuestionBody questionBody;
+	private Texture background;
+	private Question question;
+	private Question lastQuestion;
+	private int questionIndex = 0;
+	private int score = 0;
+
 
 	@Override
 	public void create () {
 		Box2D.init();
+		Gdx.input.setInputProcessor(this);
 		batch = new SpriteBatch();
-		world = new World(new Vector2(0, 0), true);
-		debugRenderer = new Box2DDebugRenderer();
 		aspectRation =(float) Gdx.graphics.getWidth()/(float)Gdx.graphics.getHeight();
 		virtualHeight = virtualWidth / aspectRation;
-
-		camera = new OrthographicCamera(virtualWidth, virtualHeight);
+		camera = new OrthographicCamera(virtualWidth/2, virtualHeight/2);
 		camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
 		camera.update();
 		Viewport viewport = new FitViewport(virtualWidth, virtualHeight, camera);
 		viewport.apply();
 		batch.setProjectionMatrix(camera.combined);
-
 		batch = new SpriteBatch();
-		int buttonWidth = Gdx.graphics.getWidth() * 4 / 5;
-		int buttonHeight = Gdx.graphics.getHeight() / 16;
-		buttons.add(new Button(virtualWidth / 2, 150, buttonWidth, buttonHeight, "a"));
-		buttons.add(new Button(virtualWidth / 2, 300, buttonWidth, buttonHeight, "b"));
-		buttons.add(new Button(virtualWidth / 2, 450, buttonWidth, buttonHeight, "c"));
-		buttons.add(new Button(virtualWidth / 2, 600, buttonWidth, buttonHeight, "d"));
+		background= new Texture("background.jpg");
+		initToStartScreen();
+
+	}
+
+	private void updateQuestion(Question question){
+		questionBody = new QuestionBody(
+				virtualWidth / 2,
+				virtualHeight * 3 / 4,
+				virtualWidth - 100,
+				virtualHeight  / 3,
+				question.getQuestion());
+		float buttonWidth = virtualWidth * 4 / 5;
+		questionButtons.clear();
+
+		for (int i = 0; i < Utils.positionsPortrait.length; i++) {
+			String answer = question.getAnswers()[i];
+			if (Gdx.graphics.getWidth() < Gdx.graphics.getHeight()) {
+				questionButtons.add(new Button(
+						Utils.positionsPortrait[i].x,
+						Utils.positionsPortrait[i].y,
+						buttonWidth,
+						answer));
+			} else {
+				questionButtons.add(new Button(
+						Utils.positionsLandscape[i].x,
+						Utils.positionsLandscape[i].y,
+						buttonWidth,
+						answer)
+				);
+			}
+		}
 	}
 
 	@Override
 	public void render () {
-		ScreenUtils.clear(0.25f, 0.25f, 1f, 1);
+		ScreenUtils.clear(0.9f, 0.9f, 0.9f, 1);
 		batch.begin();
-		for (Button button: buttons) {
-			button.draw(batch,1);
+		batch.draw(background, 0, 0, virtualWidth, virtualHeight);
+		batch.end();
+		switch (gameScreen) {
+			case START_SCREEN:
+				renderStartScreen();
+				break;
+			case PLAYING_SCREEN:
+				renderPlayingScreen();
+				break;
+			case GAME_OVER_SCREEN:
+				renderGameOverScreen();
+				break;
+		}
+	}
+
+	public void initToStartScreen() {
+		startButtons.add(
+				new Button(virtualWidth / 2,
+						virtualHeight / 3,
+						virtualWidth,
+						"Start")
+		);
+	}
+
+	public void initToPlayingScreen() {
+		questionIndex = 0;
+		score = 0;
+		question = Utils.questions.get(questionIndex);
+	}
+
+	public void initToGameOverScreen() {
+		gameOverButtons.add(
+				new Button(virtualWidth / 2,
+						virtualHeight / 3,
+						virtualWidth,
+						"score = "+score)
+		);
+	}
+	public void renderStartScreen(){
+		batch.begin();
+		for (Button button : startButtons) {
+			button.draw(batch, 1);
+		}
+		batch.end();
+	}
+
+	public void renderPlayingScreen() {
+		if (lastQuestion == null || question != lastQuestion) {
+			updateQuestion(question);
+			lastQuestion = question;
+		}
+
+		batch.begin();
+		questionBody.draw(batch, 1);
+		batch.end();
+
+		batch.begin();
+		for (Button button : questionButtons) {
+			button.draw(batch, 1);
+		}
+		batch.end();
+	}
+
+	public void renderGameOverScreen(){
+		batch.begin();
+		for (Button button : gameOverButtons) {
+			button.draw(batch, 1);
 		}
 		batch.end();
 	}
@@ -82,7 +176,6 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public void dispose () {
 		batch.dispose();
-		img.dispose();
 	}
 
 	@Override
@@ -105,12 +198,50 @@ public class MainGame extends ApplicationAdapter implements InputProcessor {
 		Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
 		float worldX = worldCoordinates.x;
 		float worldY = worldCoordinates.y;
-		for (Button btn:buttons) {
-			if (btn.isClicked(worldX,worldY)){
-				btn.setLabel("isClicked");
-			}
+		switch (gameScreen) {
+			case START_SCREEN:
+				onClickStartScreen(worldX,worldY);
+				break;
+			case PLAYING_SCREEN:
+				onClickPlayingScreen(worldX,worldY);
+				break;
+			case GAME_OVER_SCREEN:
+				onClickGameOverScreen(worldX,worldY);
+				break;
 		}
 		return true;
+	}
+	public void onClickStartScreen(float worldX, float worldY){
+		for (Button btn : startButtons) {
+			if (btn.isClicked(worldX,worldY)){
+				initToPlayingScreen();
+				gameScreen = GameScreen.PLAYING_SCREEN;
+			}
+		}
+	}
+	public void onClickPlayingScreen(float worldX, float worldY){
+		for (Button btn : questionButtons) {
+			if (btn.isClicked(worldX,worldY)){
+				if (Objects.equals(btn.getText(), question.getCorrectAnswer())){
+					score++;
+				}
+				questionIndex += 1;
+				if (Utils.questions.size() > questionIndex) {
+					question = Utils.questions.get(questionIndex);
+				}else {
+					gameScreen = GameScreen.GAME_OVER_SCREEN;
+					initToGameOverScreen();
+				}
+			}
+		}
+	}
+	public void onClickGameOverScreen(float worldX, float worldY){
+		for (Button btn : gameOverButtons) {
+			if (btn.isClicked(worldX,worldY)){
+				initToStartScreen();
+				gameScreen = GameScreen.START_SCREEN;
+			}
+		}
 	}
 
 	@Override
